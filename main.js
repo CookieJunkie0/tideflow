@@ -61,8 +61,8 @@ async function startCycle(accounts) {
 }
 
 async function main() {
-  const wallets = fs.readFileSync('wallets.txt').toString().split('\n');
-  const proxies = process.env.PROXY || fs.readFileSync('proxy.txt').toString().split('\n');
+  const wallets = fs.readFileSync('wallets.txt').toString().split(/\r?\n/);
+  const proxies = process.env.PROXY || fs.readFileSync('proxy.txt').toString().split(/\r?\n/);
 
   const accounts = [];
   for (let i = 0; i < wallets.length; i++) {
