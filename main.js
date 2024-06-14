@@ -1,8 +1,7 @@
 const { io } = require("socket.io-client");
 const fs = require('fs');
-const { SocksProxyAgent } = require('socks-proxy-agent');
 const axios = require('axios-https-proxy-fix');
-const { setupAccount, sleep, randomInt, getAccountData } = require('./utils.js');
+const { setupAccount, sleep, randomInt, getAccountData, getCaptchaToken } = require('./utils.js');
 const { ethers } = require("ethers");
 require('dotenv').config({ path: './.env' });
 
@@ -18,8 +17,11 @@ async function startCycle(accounts) {
 
         socket.on('connect', async () => {
           console.log(`${new Date().toLocaleTimeString()} ${account.wallet.address} | Connected to socket - ${socket.id}`);
-          await sleep(randomInt(STARTUP_WAIT[0], STARTUP_WAIT[1]) * 1000);
-          socket.emit("play-vs-opponent")
+          // await sleep(randomInt(STARTUP_WAIT[0], STARTUP_WAIT[1]) * 1000);
+          const captchaToken = await getCaptchaToken(account.proxy);
+          socket.emit("play-vs-opponent", {
+            token: captchaToken.token
+          })
         });
 
         socket.on('initial-data', (data) => {
@@ -29,7 +31,8 @@ async function startCycle(accounts) {
         })
 
         socket.on('disconnect', (reason) => {
-          console.log(`${new Date().toLocaleTimeString()} ${account.wallet.address} | Disconnected from socket - ${socket.id}, reason: ${reason}`);
+          console.log(`${new Date().toLocaleTimeString()} ${account.wallet.address} | Disconnected from socket, reason: ${reason}`);
+          socket.connect();
         });
 
         socket.on('error', (err) => {
@@ -50,8 +53,12 @@ async function startCycle(accounts) {
           if(accountData.success) {
             console.log(`${new Date().toLocaleTimeString()} ${account.wallet.address} | Total shells: ${accountData.data.score}`);
           }
-          await sleep(randomInt(GAME_WAIT[0], GAME_WAIT[1]) * 1000);
-          socket.emit("play-vs-opponent")
+          // await sleep(randomInt(GAME_WAIT[0], GAME_WAIT[1]) * 1000);
+
+          const captchaToken = await getCaptchaToken(account.proxy);
+          socket.emit("play-vs-opponent", {
+            token: captchaToken.token
+          })
         });
 
 
@@ -61,8 +68,8 @@ async function startCycle(accounts) {
 }
 
 async function main() {
-  const wallets = fs.readFileSync('wallets.txt').toString().split(/\r?\n/);
-  const proxies = process.env.PROXY || fs.readFileSync('proxy.txt').toString().split(/\r?\n/);
+  const wallets = fs.readFileSync('wallets.txt').toString().split('\n');
+  const proxies = process.env.PROXY || fs.readFileSync('proxy.txt').toString().split('\n');
 
   const accounts = [];
   for (let i = 0; i < wallets.length; i++) {
