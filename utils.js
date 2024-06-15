@@ -14,15 +14,14 @@ async function createCaptchaTask(proxy) {
         const proxyHost = proxyParts[1].split(':');
         const res = await axios.post("https://api.capmonster.cloud/createTask", {
             task: {
-                "type":"RecaptchaV2Task",
+                "type":"TurnstileTask",
                 "websiteURL":"https://game.tideflow.com/",
-                "websiteKey":"6LfKuvgpAAAAAIj02KFZ583LqaSsXki6-CMNDKMc",
+                "websiteKey":"0x4AAAAAAAbmMPfpEH3ybmMn",
                 "proxyType":"socks5",
                 "proxyAddress":proxyHost[0],
                 "proxyPort":proxyHost[1],
                 "proxyLogin":proxyAuth[0],
                 "proxyPassword":proxyAuth[1],
-                "userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36"
             },
             "clientKey": CAPTCHA_API,
         })
@@ -44,7 +43,7 @@ async function getCaptchaToken(proxy) {
                 taskId: task.task
             });
 
-            if(res.data.status === 'ready') { return {success: true, token: res.data.solution.gRecaptchaResponse} } else if(res.data.errorId > 0) { return {success: false, err: res.data.errorDescription} }
+            if(res.data.status === 'ready') { return {success: true, token: res.data.solution.token} } else if(res.data.errorId > 0) { return {success: false, err: res.data.errorDescription} }
             i++;
         }
 
