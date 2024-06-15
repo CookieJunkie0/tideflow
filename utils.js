@@ -1,5 +1,5 @@
 const axios = require('axios-https-proxy-fix');
-const { HttpsProxyAgent } = require('https-proxy-agent');
+const { SocksProxyAgent } = require('socks-proxy-agent');
 const crypto = require('crypto');
 const ethers = require('ethers');
 const { io } = require("socket.io-client");
@@ -62,7 +62,7 @@ function getAxiosInstance(proxy) {
             'Accept-Encoding': 'gzip, deflate, br, zstd',
             'authority': 'api.thegame.tideflow.com'
         },
-        httpsAgent: new HttpsProxyAgent(proxy)
+        httpsAgent: new SocksProxyAgent(proxy)
     });
 }
 
@@ -82,7 +82,7 @@ async function setupAccount(wallet, proxy) {
         const token = await auth(axiosInstance, wallet);
         if(!token.success) { return {success: false, err: token.err} }
 
-        const socket = io("wss://api.thegame.tideflow.com/game", { autoConnect: false, path: '/socket.io', auth: { token: token.token }, agent: new HttpsProxyAgent(proxy) });
+        const socket = io("wss://api.thegame.tideflow.com/game", { autoConnect: false, path: '/socket.io', auth: { token: token.token }, agent: new SocksProxyAgent(proxy) });
 
         return {success: true, socket, instance: axiosInstance, wallet, token: token.token, proxy}
     } catch(e) {return {success: false, err: e}}
