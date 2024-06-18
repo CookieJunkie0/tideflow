@@ -82,15 +82,13 @@ async function setupAccount(wallet, proxy) {
         const token = await auth(axiosInstance, wallet);
         if(!token.success) { return {success: false, err: token.err} }
 
-        const socket = io("wss://api.thegame.tideflow.com/game", { autoConnect: false, path: '/socket.io', auth: { token: token.token }, agent: new SocksProxyAgent(proxy) });
-
-        return {success: true, socket, instance: axiosInstance, wallet, token: token.token, proxy}
+        return {success: true, instance: axiosInstance, wallet, token: token.token, proxy}
     } catch(e) {return {success: false, err: e}}
 }
 
 async function getAccountData(instance, token) {
     try {
-        const res = await instance.get('https://api.thegame.tideflow.com/game-season/2/leaderboard/me', {headers: {Authorization: `Bearer ${token}`}});
+        const res = await instance.get('https://api.thegame.tideflow.com/game-season/3/leaderboard/me', {headers: {Authorization: `Bearer ${token}`}});
 
         return {success: true, data: res.data.you}
     } catch(e) {return {success: false, err: e}}
